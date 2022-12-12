@@ -10,9 +10,9 @@ properties:
       required: true
       description: RESET pin
 
-        The RESET pin of the GC9A01A is active high.
+        The RESET pin of the GC9A01A is active low.
         If connected directly the MCU pin should be configured
-        as active high.
+        as active low.
     
     cmd-data-gpios:
       type: phandle-array
@@ -42,7 +42,7 @@ properties:
         - 270
       description:
         Display rotation (CW) in degrees.
-
+    
     display-inversion:
       type: boolean
       description:
@@ -58,7 +58,7 @@ properties:
       type: uint8-array
       default: [0x14]
       description:
-        Register eb.
+        Register EB.
 
     reg84:
       type: uint8-array
@@ -124,7 +124,7 @@ properties:
       type: uint8-array
       default: [0xff]
       description:
-        Register 8e.
+        Register .
 
     reg8f:
       type: uint8-array
@@ -138,171 +138,158 @@ properties:
       description:
         Register b6.
 
-    regmadctl:
-      type: uint8-array
-      default: [0xcc]
-      description:
-        Register madctl.
-
-    regpixfmt:
-      type: uint8-array
-      default: [0x05]
-      description:
-        Register pixfmt.
-
-
     reg90:
       type: uint8-array
       default: [0x08,0x08,0x08,0x08]
       description:
-        Register 90
+        Register reg90
 
     regbd:
       type: uint8-array
       default: [0x06]
       description:
-        Register bd
+        Register regbd
 
     regbc:
       type: uint8-array
       default: [0x00]
       description:
-        Register bc
+        Register regbc
 
     regff:
       type: uint8-array
       default: [0x60, 0x01, 0x04]
       description:
-        Register ff
+        Register regff
 
     regvreg1a:
       type: uint8-array
       default: [0x13]
       description:
-        Register vreg1a
+        Register regvreg1a
 
     regvreg1b:
       type: uint8-array
       default: [0x13]
       description:
-        Register vreg1b
+        Register regvreg1b
 
     regvreg2a:
       type: uint8-array
       default: [0x22]
       description:
-        Register vreg2a
+        Register regvreg2a
 
     regbe:
       type: uint8-array
       default: [0x11]
       description:
-        Register be
+        Register regbe
 
     reggmctrn1:
       type: uint8-array
       default: [0x10, 0x0E]
       description:
-        Register gmctrn1
+        Register reggmctrn1
 
     regdf:
       type: uint8-array
       default: [0x21, 0x0c, 0x02]
       description:
-        Register df
+        Register regdf
 
     reggamma1:
       type: uint8-array
       default: [0x45, 0x09, 0x08, 0x08, 0x26, 0x2A]
       description:
-        Register gamma1
+        Register reggamma1
 
     reggamma2:
       type: uint8-array
       default: [0x43, 0x70, 0x72, 0x36, 0x37, 0x6F]
       description:
-        Register gamma2
+        Register reggamma2
 
     reggamma3:
       type: uint8-array
       default: [0x45, 0x09, 0x08, 0x08, 0x26, 0x2A]
       description:
-        Register gamma3
+        Register reggamma3
 
     reggamma4:
       type: uint8-array
       default: [ 0x43, 0x70, 0x72, 0x36, 0x37, 0x6F]
       description:
-        Register gamma4
+        Register reggamma4
 
     reged:
       type: uint8-array
       default: [0x1B, 0x0B]
       description:
-        Register ed
+        Register reged
 
     regae:
       type: uint8-array
       default: [0x77]
       description:
-        Register ae
+        Register regae
 
     regcd:
       type: uint8-array
       default: [0x63]
       description:
-        Register cd
+        Register regcd
 
     regframerate:
       type: uint8-array
       default: [0x34]
       description:
-        Register fr
+        Register regfr
 
     reg70:
       type: uint8-array
       default: [0x07, 0x07, 0x04, 0x0E, 0x0F, 0x09, 0x07, 0x08, 0x03]
       description:
-        Register 70
+        Register reg70
 
     reg62:
       type: uint8-array
       default: [0x18, 0x0D, 0x71, 0xED, 0x70, 0x70, 0x18, 0x0F, 0x71, 0xEF, 0x70, 0x70]
       description:
-        Register 62
+        Register reg62
 
     reg63:
       type: uint8-array
       default: [0x18, 0x11, 0x71, 0xF1, 0x70, 0x70, 0x18, 0x13, 0x71, 0xF3, 0x70, 0x70]
       description:
-        Register 63
+        Register reg63
 
     reg64:
       type: uint8-array
       default: [0x28, 0x29, 0xF1, 0x01, 0xF1, 0x00, 0x07]
       description:
-        Register 64
+        Register reg64
 
     reg66:
       type: uint8-array
       default: [0x3C, 0x00, 0xCD, 0x67, 0x45, 0x45, 0x10, 0x00, 0x00, 0x00]
       description:
-        Register 66
+        Register reg66
 
     reg67:
       type: uint8-array
       default: [0x00, 0x3C, 0x00, 0x00, 0x00, 0x01, 0x54, 0x10, 0x32, 0x98]
       description:
-        Register 67
+        Register reg67
 
     reg74:
       type: uint8-array
       default: [0x10, 0x85, 0x80, 0x00, 0x00, 0x4E, 0x00]
       description:
-        Register 74
+        Register reg74
 
     reg98:
       type: uint8-array
       default: [0x3e, 0x07]
       description:
-        Register 98
+        Register reg98

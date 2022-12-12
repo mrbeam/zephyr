@@ -16,6 +16,7 @@ struct gc9a01a_data {
 
 int gc9a01a_regs_init(const struct device *dev)
 {
+	
     const struct gc9a01a_config *config = dev->config;
 	const struct gc9a01a_regs *regs = config->regs;
 
@@ -84,14 +85,14 @@ int gc9a01a_regs_init(const struct device *dev)
 	if (r < 0) {
 		return r;
 	}
-	r = gc9a01a_transmit(dev, GC9A01A_MADCTL, regs->regmadctl,1);
-	if (r < 0) {
-		return r;
-	}
-	r = gc9a01a_transmit(dev, GC9A01A_PIXFMT, regs->regpixfmt,1);
-	if (r < 0) {
-		return r;
-	}
+	// r = gc9a01a_transmit(dev, GC9A01A_MADCTL, regs->regmadctl,1);// redundant
+	// if (r < 0) {
+	// 	return r;
+	// }
+	// r = gc9a01a_transmit(dev, GC9A01A_PIXFMT, regs->regpixfmt,1);// redundant
+	// if (r < 0) {
+	// 	return r;
+	// }
 	r = gc9a01a_transmit(dev, 0x90, regs->reg90,4);
 	if (r < 0) {
 		return r;
@@ -200,10 +201,10 @@ int gc9a01a_regs_init(const struct device *dev)
 	if (r < 0) {
 		return r;
 	}
-	r = gc9a01a_transmit(dev,GC9A01A_INVON, NULL,0);
-	if (r < 0) {
-		return r;
-	}
+	// r = gc9a01a_transmit(dev,GC9A01A_INVON, NULL,0);// redundant
+	// if (r < 0) {
+	// 	return r;
+	// }
 	r = gc9a01a_transmit(dev,GC9A01A_SLPOUT, NULL,0);
 	if (r < 0) {
 		return r;
@@ -215,7 +216,7 @@ int gc9a01a_regs_init(const struct device *dev)
 		return r;
 	}
 	k_sleep(K_MSEC(20));
-
+	LOG_INF("CONFIGURED");
     return 0;
 }
 
@@ -338,13 +339,13 @@ static int gc9a01a_set_orientation(const struct device *dev,
 	int r;
 	uint8_t tx_data = GC9A01A_MADCTL_BGR;
 
-	if (orientation == DISPLAY_ORIENTATION_NORMAL) {
-		tx_data |= GC9A01A_MADCTL_MX;
-	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_90) {
-		tx_data |= GC9A01A_MADCTL_MV;
+	if (orientation == DISPLAY_ORIENTATION_NORMAL) { // works
+		tx_data |= 0;
+	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_90) { 
+		tx_data |= BIT(5) ;
 	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_180) {
-		tx_data |= GC9A01A_MADCTL_MY;
-	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_270) {
+		tx_data |= GC9A01A_MADCTL_MY | GC9A01A_MADCTL_MX | GC9A01A_MADCTL_MH;
+	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_270) { // works
 		tx_data |= GC9A01A_MADCTL_MV | GC9A01A_MADCTL_MX |
 			   GC9A01A_MADCTL_MY;
 	}
@@ -448,12 +449,6 @@ static int gc9a01a_init(const struct device *dev)
 	}
 
 	gc9a01a_hw_reset(dev);
-
-	// r = gc9a01a_transmit(dev, GC9A01A_SWRESET, NULL, 0);
-	// if (r < 0) {
-	// 	LOG_ERR("Error transmit command Software Reset (%d)", r);
-	// 	return r;
-	// }
 
 	k_sleep(K_MSEC(5));
 

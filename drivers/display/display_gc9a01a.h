@@ -133,8 +133,6 @@ struct gc9a01a_regs {
   uint8_t reg8e[1];
   uint8_t reg8f[1];
   uint8_t regb6[2];
-  uint8_t regmadctl[1];
-  uint8_t regpixfmt[1];
   uint8_t reg90[4];
   uint8_t regbd[1];
   uint8_t regbc[1];
@@ -226,8 +224,6 @@ struct gc9a01a_regs {
   .reg8e=DT_PROP(DT_INST(n,waveshare_gc9a01a),reg8e),\
   .reg8f=DT_PROP(DT_INST(n,waveshare_gc9a01a),reg8f),\
   .regb6=DT_PROP(DT_INST(n,waveshare_gc9a01a),regb6),\
-  .regmadctl=DT_PROP(DT_INST(n,waveshare_gc9a01a),regmadctl),\
-  .regpixfmt=DT_PROP(DT_INST(n,waveshare_gc9a01a),regpixfmt),\
   .reg90=DT_PROP(DT_INST(n,waveshare_gc9a01a),reg90),\
   .regbd=DT_PROP(DT_INST(n,waveshare_gc9a01a),regbd),\
   .regbc=DT_PROP(DT_INST(n,waveshare_gc9a01a),regbc),\
