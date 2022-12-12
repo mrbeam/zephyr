@@ -85,14 +85,6 @@ int gc9a01a_regs_init(const struct device *dev)
 	if (r < 0) {
 		return r;
 	}
-	// r = gc9a01a_transmit(dev, GC9A01A_MADCTL, regs->regmadctl,1);// redundant
-	// if (r < 0) {
-	// 	return r;
-	// }
-	// r = gc9a01a_transmit(dev, GC9A01A_PIXFMT, regs->regpixfmt,1);// redundant
-	// if (r < 0) {
-	// 	return r;
-	// }
 	r = gc9a01a_transmit(dev, 0x90, regs->reg90,4);
 	if (r < 0) {
 		return r;
@@ -201,10 +193,6 @@ int gc9a01a_regs_init(const struct device *dev)
 	if (r < 0) {
 		return r;
 	}
-	// r = gc9a01a_transmit(dev,GC9A01A_INVON, NULL,0);// redundant
-	// if (r < 0) {
-	// 	return r;
-	// }
 	r = gc9a01a_transmit(dev,GC9A01A_SLPOUT, NULL,0);
 	if (r < 0) {
 		return r;
