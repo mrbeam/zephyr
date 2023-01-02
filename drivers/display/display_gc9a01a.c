@@ -5,7 +5,7 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_REGISTER(display_gc9a01a, CONFIG_DISPLAY_LOG_LEVEL);
+LOG_MODULE_REGISTER(display_gc9a01a, LOG_LEVEL_ERR);
 
 struct gc9a01a_data {
 	uint8_t bytes_per_pixel;
@@ -400,6 +400,22 @@ static int gc9a01a_configure(const struct device *dev)
 	return 0;
 }
 
+static int gc9a01a_set_brightness(const struct device *dev,
+				  const uint8_t brightness)
+{
+	const struct gc9a01a_config *config = dev->config;
+	uint32_t step=config->backlight.period/100;
+	int ret = pwm_set_pulse_dt(&config->backlight,brightness*step);
+	LOG_INF("%d%%",brightness);
+	if(ret){
+		LOG_ERR("Failed to set pulse width");
+		return ret;
+	}
+	return 0;
+	// LOG_ERR("Set brightness not implemented");
+	// return -ENOTSUP;
+}
+
 
 static int gc9a01a_init(const struct device *dev)
 {
@@ -451,6 +467,12 @@ static int gc9a01a_init(const struct device *dev)
 	r = gc9a01a_exit_sleep(dev);
 	if (r < 0) {
 		LOG_ERR("Could not exit sleep mode (%d)", r);
+		return r;
+	}
+
+	r=gc9a01a_set_brightness(dev,50);
+	if (r < 0) {
+		LOG_ERR("Could not set brightness (%d)", r);
 		return r;
 	}
 
@@ -556,20 +578,6 @@ static void *gc9a01a_get_framebuffer(const struct device *dev)
 	return NULL;
 }
 
-static int gc9a01a_set_brightness(const struct device *dev,
-				  const uint8_t brightness)
-{
-	const struct gc9a01a_config *config = dev->config;
-	int ret = pwm_set_pulse_dt(&config->backlight,brightness);
-	LOG_INF("%d",brightness);
-	if(ret){
-		LOG_ERR("Failed to set pusle width");
-		return ret;
-	}
-	return 0;
-	// LOG_ERR("Set brightness not implemented");
-	// return -ENOTSUP;
-}
 
 static int gc9a01a_set_contrast(const struct device *dev,
 				const uint8_t contrast)
