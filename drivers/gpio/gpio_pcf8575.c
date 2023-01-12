@@ -66,14 +66,14 @@ static int pcf8575_process_input(const struct device *dev, gpio_port_value_t *va
 		LOG_ERR("%s: failed to read from device: %d", dev->name, rc);
 		return -EIO;
 	}
-	rx_buf = rx_buf_helper[1];		// TODO the oder should be msb first, but Im not sure 
-	rx_buf |= rx_buf_helper[0]<<8;	// The datasheet says first byte to P07 to P00, second to the other Pins
+	rx_buf = rx_buf_helper[0];		// P07-P00 first byte received(read) from pcf8575
+	rx_buf |= rx_buf_helper[1]<<8;	// P17-P07 second byte received(read) from pcf8575 whose value is shifted by 8 and stored in *value
 	
 	if (value) {
-		*value = rx_buf;
+		*value = rx_buf; // format P17-P10..P07-P00 (bit15-bit8..bit7-bit0)
 	}
 
-	drv_data->input_port_last = rx_buf;
+	drv_data->input_port_last = rx_buf; 
 
 	return rc;
 }
@@ -183,9 +183,9 @@ static int pcf8575_port_set_raw(const struct device *dev, uint16_t mask, uint16_
 	tx_buf = (drv_data->pins_cfg.outputs_state & ~mask);
 	tx_buf |= (value & mask);
 	tx_buf ^= toggle;
-	tx_buf_p[1] = (uint8_t)tx_buf; // TODO I'm not sure which byte is the first one I think msb but Im not sure. You should test that and adjust it maybe
-	tx_buf_p[0] = tx_buf >> 8;
-	rc = i2c_write_dt(&drv_cfg->i2c, tx_buf_p, sizeof(tx_buf_p));
+	tx_buf_p[0] = (uint8_t)tx_buf; // for P07-P00
+	tx_buf_p[1] = tx_buf >> 8;  // for P17-P10
+	rc = i2c_write_dt(&drv_cfg->i2c, tx_buf_p, sizeof(tx_buf_p)); // send P0 values first and P1 values second
 	if (rc != 0) {
 		LOG_ERR("%s: failed to write output port P0: %d", dev->name, rc);
 		return -EIO;
@@ -216,19 +216,18 @@ static int pcf8575_pin_configure(const struct device *dev, gpio_pin_t pin, gpio_
 	uint16_t temp_pins = drv_data->pins_cfg.outputs_state;
 	uint16_t temp_outputs = drv_data->pins_cfg.configured_as_outputs;
 
-	LOG_INF("0. temp pins %d,temp outputs %d,pin %d",temp_pins,temp_outputs,pin);
+
 	if (flags & (GPIO_PULL_UP | GPIO_PULL_DOWN | GPIO_DISCONNECTED | GPIO_SINGLE_ENDED)) {
 		return -ENOTSUP;
 	}
 	if (flags & GPIO_INPUT) {
 		temp_outputs &= ~BIT(pin);
 		temp_pins &= ~(1 << pin);
-		LOG_INF("Setting as input");
-		LOG_INF("1. temp pins %d,temp outputs %d,pin %d",temp_pins,temp_outputs,pin);
+		
 	} else if (flags & GPIO_OUTPUT) {
 		drv_data->pins_cfg.configured_as_outputs |= BIT(pin);
 		temp_outputs = drv_data->pins_cfg.configured_as_outputs;
-		LOG_INF("Setting as output");	
+
 	}
 	if (flags & GPIO_OUTPUT_INIT_HIGH) {
 		temp_pins |= (1 << pin);
@@ -240,7 +239,7 @@ static int pcf8575_pin_configure(const struct device *dev, gpio_pin_t pin, gpio_
 	ret = pcf8575_port_set_raw(dev,drv_data->pins_cfg.configured_as_outputs, temp_pins, 0);
 
 	if (ret == 0) {
-		LOG_INF("pinset");
+
 		k_sem_take(&drv_data->lock, K_FOREVER);
 		drv_data->pins_cfg.outputs_state = temp_pins;
 		drv_data->pins_cfg.configured_as_outputs = temp_outputs;
@@ -270,7 +269,7 @@ static int pcf8575_port_set_masked_raw(const struct device *dev, gpio_port_pins_
  * @brief Sets some output pins of the pcf8575
  *
  * @param dev Pointer to the device structure for the driver instance.
- * @param pins The pin(s) which will be set in a range from 0 to 7
+ * @param pins The pin(s) which will be set in a range from P17-P10..P07-P00
  *
  * @retval 0 If successful.
  * @retval Negative value for error.
@@ -374,7 +373,7 @@ static int pcf8575_init(const struct device *dev)
 			return -EIO;
 		}
 	}
-	LOG_INF("CONFIGURED");
+
 
 	return 0;
 }
