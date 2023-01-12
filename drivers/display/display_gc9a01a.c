@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2017 Jan Van Winkel <jan.van_winkel@dxplore.eu>
+ * Copyright (c) 2019 Nordic Semiconductor ASA
+ * Copyright (c) 2020 Teslabs Engineering S.L.
+ * Copyright (c) 2021 Krivorot Oleg <krivorot.oleg@gmail.com>
+ * Copyright (c) 2022 Mr Beam Lasers GmbH.
+ * Copyright (c) 2022 Amrith Venkat Kesavamoorthi <amrith@mr-beam.org> 
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include "display_gc9a01a.h"
 
 #include <zephyr/dt-bindings/display/gc9a01a.h>
@@ -5,7 +15,7 @@
 #include <zephyr/sys/byteorder.h>
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_REGISTER(display_gc9a01a, LOG_LEVEL_ERR);
+LOG_MODULE_REGISTER(display_gc9a01a, CONFIG_DISPLAY_LOG_LEVEL);
 
 struct gc9a01a_data {
 	uint8_t bytes_per_pixel;
@@ -204,7 +214,7 @@ int gc9a01a_regs_init(const struct device *dev)
 		return r;
 	}
 	k_sleep(K_MSEC(20));
-	LOG_INF("CONFIGURED");
+
     return 0;
 }
 
@@ -327,15 +337,14 @@ static int gc9a01a_set_orientation(const struct device *dev,
 	int r;
 	uint8_t tx_data = GC9A01A_MADCTL_BGR;
 
-	if (orientation == DISPLAY_ORIENTATION_NORMAL) { // works
+	if (orientation == DISPLAY_ORIENTATION_NORMAL) { // workss
 		tx_data |= 0;
-	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_90) { 
-		tx_data |= BIT(5) ;
-	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_180) {
+	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_90) { // works CW 90
+		tx_data |= GC9A01A_MADCTL_MV | GC9A01A_MADCTL_MY ;
+	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_180) { // works CW 180
 		tx_data |= GC9A01A_MADCTL_MY | GC9A01A_MADCTL_MX | GC9A01A_MADCTL_MH;
-	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_270) { // works
-		tx_data |= GC9A01A_MADCTL_MV | GC9A01A_MADCTL_MX |
-			   GC9A01A_MADCTL_MY;
+	} else if (orientation == DISPLAY_ORIENTATION_ROTATED_270) { // works CW 270
+		tx_data |= GC9A01A_MADCTL_MV | GC9A01A_MADCTL_MX ;
 	}
 
 	r = gc9a01a_transmit(dev, GC9A01A_MADCTL, &tx_data, 1U);
@@ -406,14 +415,13 @@ static int gc9a01a_set_brightness(const struct device *dev,
 	const struct gc9a01a_config *config = dev->config;
 	uint32_t step=config->backlight.period/100;
 	int ret = pwm_set_pulse_dt(&config->backlight,brightness*step);
-	LOG_INF("%d%%",brightness);
+
 	if(ret){
 		LOG_ERR("Failed to set pulse width");
 		return ret;
 	}
 	return 0;
-	// LOG_ERR("Set brightness not implemented");
-	// return -ENOTSUP;
+
 }
 
 

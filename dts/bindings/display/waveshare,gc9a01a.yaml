@@ -1,3 +1,9 @@
+# Copyright (c) 2018, Jan Van Winkel <jan.van_winkel@dxplore.eu>
+# Copyright (c) 2020, Teslabs Engineering S.L.
+# Copyright (c) 2022 Mr Beam Lasers GmbH.
+# Copyright (c) 2022 Amrith Venkat Kesavamoorthi <amrith@mr-beam.org> 
+# SPDX-License-Identifier: Apache-2.0
+
 description: GC9A01A 240x240 circular display controller
 
 compatible: "waveshare,gc9a01a"
