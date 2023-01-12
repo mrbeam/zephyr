@@ -3,8 +3,8 @@
  * Copyright (c) 2019 Nordic Semiconductor ASA
  * Copyright (c) 2020 Teslabs Engineering S.L.
  * Copyright (c) 2021 Krivorot Oleg <krivorot.oleg@gmail.com>
- * Copyright (c) 2022 Mr Beam Lasers GmbH.
- * Copyright (c) 2022 Amrith Venkat Kesavamoorthi <amrith@mr-beam.org> 
+ * Copyright (c) 2023 Mr Beam Lasers GmbH.
+ * Copyright (c) 2023 Amrith Venkat Kesavamoorthi <amrith@mr-beam.org> 
  * SPDX-License-Identifier: Apache-2.0
  */
 
