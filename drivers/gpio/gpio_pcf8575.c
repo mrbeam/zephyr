@@ -1,7 +1,7 @@
 /**
  * Copyright (c)
  * 2022 Ithinx GmbH
- * 2022 Mr Beam Lasers GmbH
+ * 2023 Mr Beam Lasers GmbH
  * 
  * SPDX-License-Identifier: Apache-2.0
  * 
