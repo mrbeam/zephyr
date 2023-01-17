@@ -297,7 +297,7 @@ static int gc9a01a_configure(const struct device *dev)
  * @brief To set the backlight brightness of the display.
  *
  * @param dev GC9A01A device instance.
- * @param brightness percentage of brightness of the backlight.
+ * @param brightness Brightness in steps of 1/256.
  * @return 0 when succesful, errno otherwise.
  */
 static int gc9a01a_set_brightness(const struct device *dev,
@@ -305,7 +305,7 @@ static int gc9a01a_set_brightness(const struct device *dev,
 {
 	const struct gc9a01a_config *config = dev->config;
 	uint32_t step=config->backlight.period/100;
-	int ret = pwm_set_pulse_dt(&config->backlight,brightness*step);
+	int ret = pwm_set_pulse_dt(&config->backlight,brightness*step/2.55);
 
 	if(ret){
 		LOG_ERR("Failed to set pulse width");
@@ -522,7 +522,7 @@ static void *gc9a01a_get_framebuffer(const struct device *dev)
  * @brief To set contrast of the display.
  *
  * @param dev  GC9A01A device instance.
- * @param contrast  Contrast value in percentage.
+ * @param contrast  Contrast in steps of 1/256.
  * @return Not supported
  */
 static int gc9a01a_set_contrast(const struct device *dev,
