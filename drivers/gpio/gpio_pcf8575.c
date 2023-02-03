@@ -9,8 +9,10 @@
  */
 
 #define DT_DRV_COMPAT nxp_pcf8575
+#define I2C_RX_TX_BUFFER_SIZE (2U)
 
 #include <zephyr/drivers/gpio/gpio_utils.h>
+#include <stdio.h>
 
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/i2c.h>
@@ -53,25 +55,24 @@ struct pcf8575_drv_cfg {
  * @retval 0 If successful.
  * @retval Negative value for error code.
  */
-static int pcf8575_process_input(const struct device *dev, gpio_port_value_t *value)
+static int pcf8575_process_input(const struct device *dev, gpio_port_value_t *pValue)
 {
 	const struct pcf8575_drv_cfg *drv_cfg = dev->config;
 	struct pcf8575_drv_data *drv_data = dev->data;
 	int rc = 0;
 	uint16_t rx_buf;
-	uint8_t rx_buf_helper[2];
+	uint8_t rx_buf_helper[I2C_RX_TX_BUFFER_SIZE];
 	
 	rc = i2c_read_dt(&drv_cfg->i2c, rx_buf_helper, sizeof(rx_buf_helper));
-	if (rc != 0) {
+	if (rc) {
 		LOG_ERR("%s: failed to read from device: %d", dev->name, rc);
 		return -EIO;
 	}
+
 	rx_buf = rx_buf_helper[0];		// P07-P00 first byte received(read) from pcf8575
 	rx_buf |= rx_buf_helper[1]<<8;	// P17-P07 second byte received(read) from pcf8575 whose value is shifted by 8 and stored in *value
 	
-	if (value) {
-		*value = rx_buf; // format P17-P10..P07-P00 (bit15-bit8..bit7-bit0)
-	}
+	*pValue = rx_buf; // format P17-P10..P07-P00 (bit15-bit8..bit7-bit0)
 
 	drv_data->input_port_last = rx_buf; 
 
@@ -93,7 +94,7 @@ static void pcf8575_work_handler(struct k_work *work)
 		LOG_ERR("Failed to read interrupt sources: %d", rc);
 	}
 	k_sem_give(&drv_data->lock);
-	if (input_port_last_temp != (uint16_t)changed_pins && !rc) {
+	if (input_port_last_temp != (((uint16_t)changed_pins) && (!rc))) {
 
 		/** Find changed bits*/
 		changed_pins ^= input_port_last_temp;
@@ -123,8 +124,14 @@ static void pcf8575_int_gpio_handler(const struct device *dev, struct gpio_callb
  * @retval 0 If successful.
  * @retval Negative value for error code.
  */
-static int pcf8575_port_get_raw(const struct device *dev, gpio_port_value_t *value)
-{
+static int pcf8575_port_get_raw(const struct device *dev, gpio_port_value_t *pValue)
+{	
+	if(dev==NULL || pValue==NULL)
+	{
+		LOG_ERR("Line : %d . Invalid arguments %p, %p ",__LINE__,dev,pValue);
+		return -EINVAL;
+	}
+
 	struct pcf8575_drv_data *drv_data = dev->data;
 	int rc;
 
@@ -132,7 +139,7 @@ static int pcf8575_port_get_raw(const struct device *dev, gpio_port_value_t *val
 		return -EWOULDBLOCK;
 	}
 
-	if ((~drv_data->pins_cfg.configured_as_outputs & (uint16_t)*value) != (uint16_t)*value) {
+	if ((~drv_data->pins_cfg.configured_as_outputs & (uint16_t)*pValue) != (uint16_t)*pValue) {
 		LOG_ERR("Pin(s) is/are configured as output which should be input.");
 		return -EOPNOTSUPP;
 	}
@@ -143,8 +150,7 @@ static int pcf8575_port_get_raw(const struct device *dev, gpio_port_value_t *val
 	 * Reading of the input port also clears the generated interrupt,
 	 * thus the configured callbacks must be fired also here if needed.
 	 */
-	rc = pcf8575_process_input(dev, value);
-
+	rc = pcf8575_process_input(dev, pValue);
 	k_sem_give(&drv_data->lock);
 
 	return rc;
@@ -168,7 +174,7 @@ static int pcf8575_port_set_raw(const struct device *dev, uint16_t mask, uint16_
 	struct pcf8575_drv_data *drv_data = dev->data;
 	int rc = 0;
 	uint16_t tx_buf;
-	uint8_t tx_buf_p[2];
+	uint8_t tx_buf_p[I2C_RX_TX_BUFFER_SIZE];
 
 	if (k_is_in_isr()) {
 		LOG_ERR("ewouldblock");
@@ -186,10 +192,11 @@ static int pcf8575_port_set_raw(const struct device *dev, uint16_t mask, uint16_
 	tx_buf_p[0] = (uint8_t)tx_buf; // for P07-P00
 	tx_buf_p[1] = tx_buf >> 8;  // for P17-P10
 	rc = i2c_write_dt(&drv_cfg->i2c, tx_buf_p, sizeof(tx_buf_p)); // send P0 values first and P1 values second
-	if (rc != 0) {
+	if (rc) {
 		LOG_ERR("%s: failed to write output port P0: %d", dev->name, rc);
 		return -EIO;
 	}
+	
 	k_sem_take(&drv_data->lock, K_FOREVER);
 	drv_data->pins_cfg.outputs_state = tx_buf;
 	k_sem_give(&drv_data->lock);
@@ -354,13 +361,13 @@ static int pcf8575_init(const struct device *dev)
 		}
 
 		rc = gpio_pin_configure_dt(&drv_cfg->gpio_int, GPIO_INPUT);
-		if (rc != 0) {
+		if (rc) {
 			LOG_ERR("%s: failed to configure INT line: %d", dev->name, rc);
 			return -EIO;
 		}
 
 		rc = gpio_pin_interrupt_configure_dt(&drv_cfg->gpio_int, GPIO_INT_EDGE_TO_ACTIVE);
-		if (rc != 0) {
+		if (rc) {
 			LOG_ERR("%s: failed to configure INT interrupt: %d", dev->name, rc);
 			return -EIO;
 		}
@@ -368,7 +375,7 @@ static int pcf8575_init(const struct device *dev)
 		gpio_init_callback(&drv_data->int_gpio_cb, pcf8575_int_gpio_handler,
 				   BIT(drv_cfg->gpio_int.pin));
 		rc = gpio_add_callback(drv_cfg->gpio_int.port, &drv_data->int_gpio_cb);
-		if (rc != 0) {
+		if (rc) {
 			LOG_ERR("%s: failed to add INT callback: %d", dev->name, rc);
 			return -EIO;
 		}
