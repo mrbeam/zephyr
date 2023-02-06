@@ -128,7 +128,7 @@ static int pcf8575_port_get_raw(const struct device *dev, gpio_port_value_t *pVa
 {	
 	if(dev==NULL || pValue==NULL)
 	{
-		LOG_ERR("Line : %d . Invalid arguments %p, %p ",__LINE__,(void *)dev,(void *)pValue);
+				LOG_ERR("Line : %d . Invalid arguments %p, %p, %x",__LINE__,(void *)dev,(void *)pValue,*pValue);
 		return -EINVAL;
 	}
 
