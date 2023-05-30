@@ -63,6 +63,12 @@ static int pcf8575_process_input(const struct device *dev, gpio_port_value_t *pV
 	uint16_t rx_buf;
 	uint8_t rx_buf_helper[I2C_RX_TX_BUFFER_SIZE];
 	
+	if(dev==NULL || pValue==NULL)
+	{
+		LOG_ERR("Line : %d . Invalid arguments %p, %p, %x",__LINE__,(void *)dev,(void *)pValue,*pValue);
+		return -EINVAL;
+	}
+
 	rc = i2c_read_dt(&drv_cfg->i2c, rx_buf_helper, sizeof(rx_buf_helper));
 	if (rc) {
 		LOG_ERR("%s: failed to read from device: %d", dev->name, rc);
@@ -73,6 +79,12 @@ static int pcf8575_process_input(const struct device *dev, gpio_port_value_t *pV
 	rx_buf |= rx_buf_helper[1]<<8;	// P17-P07 second byte received(read) from pcf8575 whose value is shifted by 8 and stored in *value
 	
 	*pValue = rx_buf; // format P17-P10..P07-P00 (bit15-bit8..bit7-bit0)
+	
+	// returns -ENODATA if the pValue is NULL
+	if(pValue==NULL)
+	{
+		return -ENODATA;
+	}
 
 	drv_data->input_port_last = rx_buf; 
 
@@ -128,7 +140,7 @@ static int pcf8575_port_get_raw(const struct device *dev, gpio_port_value_t *pVa
 {	
 	if(dev==NULL || pValue==NULL)
 	{
-				LOG_ERR("Line : %d . Invalid arguments %p, %p, %x",__LINE__,(void *)dev,(void *)pValue,*pValue);
+		LOG_ERR("Line : %d . Invalid arguments %p, %p, %x",__LINE__,(void *)dev,(void *)pValue,*pValue);
 		return -EINVAL;
 	}
 
@@ -176,6 +188,10 @@ static int pcf8575_port_set_raw(const struct device *dev, uint16_t mask, uint16_
 	uint16_t tx_buf;
 	uint8_t tx_buf_p[I2C_RX_TX_BUFFER_SIZE];
 
+	if(dev==NULL){
+		return -EINVAL;
+	}
+	
 	if (k_is_in_isr()) {
 		LOG_ERR("ewouldblock");
 		return -EWOULDBLOCK;
@@ -223,6 +239,10 @@ static int pcf8575_pin_configure(const struct device *dev, gpio_pin_t pin, gpio_
 	uint16_t temp_pins = drv_data->pins_cfg.outputs_state;
 	uint16_t temp_outputs = drv_data->pins_cfg.configured_as_outputs;
 
+	if(dev==NULL)
+	{
+		return -EINVAL;
+	}
 
 	if (flags & (GPIO_PULL_UP | GPIO_PULL_DOWN | GPIO_DISCONNECTED | GPIO_SINGLE_ENDED)) {
 		return -ENOTSUP;
